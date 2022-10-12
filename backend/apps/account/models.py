@@ -2,8 +2,8 @@ from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
-from apps.base.models import BaseModel
-from services.services import return_avatar_directory
+from apps.base.models import BaseModel, Document
+from services.services import return_file_directory
 
 
 class UserManager(BaseUserManager):
@@ -83,10 +83,10 @@ class UserModel(BaseModel, AbstractBaseUser, PermissionsMixin):
 class Profile(models.Model):
     """Модель: Профиль пользователя"""
 
-    def return_avatar_directory(self, *args):
-        """Возвращает путь загрузки фотографии"""
+    def return_path_to_upload_avatar(self, *args):
+        """Возвращает путь загрузки аватарки"""
 
-        return return_avatar_directory('users', self.user.email)
+        return return_file_directory('users', 'avatar', self.user.email)
 
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user')
     first_name = models.CharField('Имя', max_length=20)
@@ -94,12 +94,65 @@ class Profile(models.Model):
     patronymic = models.CharField('Отчество', max_length=20)
     phone = models.CharField('Номер телефона', max_length=11, unique=True)
 
-    image = models.ImageField('Аватарка', null=True, blank=True, upload_to=path_to_upload_image)
+    image = models.ImageField('Аватарка', null=True, blank=True, upload_to=return_path_to_upload_avatar)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
-
     class Meta:
         verbose_name = 'Профиль'
         verbose_name_plural = 'Профили'
+
+
+class UserDoc(Document):
+    """ Модель: Документы пользователя  """
+
+    def return_path_to_upload_doc(self, *args):
+        """Возвращает путь загрузки документа"""
+
+        return return_file_directory('cars', 'doc', self.owner.email)
+
+    owner = models.ForeignKey(UserModel, verbose_name="Владелец", on_delete=models.CASCADE,
+                              related_name='my_docs')
+    file = models.FileField('Копия', upload_to=return_path_to_upload_doc, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.type} - {self.owner}"
+
+    class Meta:
+        verbose_name = 'Документ машины'
+        verbose_name_plural = 'Документы машины'
+
+
+class FuelCard(BaseModel):
+    """ Модель: Топливная карта"""
+
+    limit = models.PositiveIntegerField('Лимит')
+    number = models.CharField('Номер', unique=True, max_length=16)
+
+    owner = models.OneToOneField(UserModel, verbose_name='Владелец', on_delete=models.SET(None),
+                                 related_name='card', blank=True, null=True)
+
+    balance = models.PositiveIntegerField('Остаток', null=True, blank=True)
+
+    def __str__(self):
+        # 1234-5678-1234-5678
+        return f"{self.number[0:4]}-{self.number[4:8]}-{self.number[8:12]}-{self.number[12:16]}"
+
+    class Meta:
+        verbose_name = 'Топливная карта'
+        verbose_name_plural = 'Топливные карты'
+
+
+
+class WhiteListEmail(models.Model):
+    """  Модель: email разрешенный для регистрации """
+
+    email = models.EmailField('Email')
+
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        verbose_name = 'White List of Emil'
+        verbose_name_plural = 'White List of Emil'
