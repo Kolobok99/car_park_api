@@ -1,12 +1,9 @@
-import datetime
-
-from PIL import Image
-
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
 from apps.base.models import BaseModel
+from services.services import return_avatar_directory
 
 
 class UserManager(BaseUserManager):
@@ -86,11 +83,10 @@ class UserModel(BaseModel, AbstractBaseUser, PermissionsMixin):
 class Profile(models.Model):
     """Модель: Профиль пользователя"""
 
-    def path_to_upload_image(self, *args):
+    def return_avatar_directory(self, *args):
         """Возвращает путь загрузки фотографии"""
 
-        path = f"users/{self.user.email}/avatars/user_avatar_{datetime.datetime.today()}.webp"
-        return path
+        return return_avatar_directory('users', self.user.email)
 
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user')
     first_name = models.CharField('Имя', max_length=20)
