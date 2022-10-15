@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
-        return UserModel
+        return user
 
     def create_superuser(self, email, password, **extra_fields):
         """Создание root'а """
@@ -27,6 +27,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('role', 'a')
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError("Root должен иметь is_staff=True.")
@@ -39,22 +40,22 @@ class UserModel(BaseModel, AbstractBaseUser, PermissionsMixin):
     """ Модель: Пользователь """
 
     # Типы user'ов
-    KINDES = (
+    KINDS = (
         ('a', 'admin'),
         ('m', 'manager'),
         ('d', 'driver'),
         ('e', 'engineer'),
     )
 
-    email = models.EmailField('Почта', unique=True,
+    email = models.EmailField('Почта', primary_key=True,
                               error_messages={
                                   'unique': 'Пользователь с таким email уже существует.',
                                   'invalid': 'Некорректный email'
                               })
     password = models.CharField("Пароль", max_length=128)
-    role = models.CharField('Роль', max_length=1, choices=KINDES, default='d')
-    is_active = models.BooleanField("Активирован?", default=False)
-    activation_code = models.CharField("Код активации аккаунта", max_length=6, null=True, blank=True)
+    role = models.CharField('Роль', max_length=1, choices=KINDS, default='d')
+    is_active = models.BooleanField("Активирован?", default=False, editable=False)
+    activation_code = models.CharField("Код активации аккаунта", max_length=6, editable=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
@@ -70,7 +71,7 @@ class UserModel(BaseModel, AbstractBaseUser, PermissionsMixin):
         pass
 
     def is_manager(self):
-        return True if self.role == 'm' else False
+        return True if self.is_authenticated and self.role == 'm' else False
 
     def __str__(self):
         return self.email
@@ -86,9 +87,10 @@ class Profile(models.Model):
     def return_path_to_upload_avatar(self, *args):
         """Возвращает путь загрузки аватарки"""
 
-        return return_file_directory('users', 'avatar', self.user.email)
+        return return_file_directory('users', 'avatars', self.user.email, self.image.name)
 
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user')
+
+    user = models.OneToOneField(UserModel, on_delete=models.CASCADE, related_name='profile')
     first_name = models.CharField('Имя', max_length=20)
     last_name = models.CharField('Фамилия', max_length=20, )
     patronymic = models.CharField('Отчество', max_length=20)
@@ -104,31 +106,31 @@ class Profile(models.Model):
         verbose_name_plural = 'Профили'
 
 
-class UserDoc(Document):
+class UserDocument(Document):
     """ Модель: Документы пользователя  """
 
     def return_path_to_upload_doc(self, *args):
         """Возвращает путь загрузки документа"""
 
-        return return_file_directory('cars', 'doc', self.owner.email)
+        return return_file_directory('users', 'doc', self.owner.email)
 
     owner = models.ForeignKey(UserModel, verbose_name="Владелец", on_delete=models.CASCADE,
-                              related_name='my_docs')
+                              related_name='docs')
     file = models.FileField('Копия', upload_to=return_path_to_upload_doc, null=True, blank=True)
 
     def __str__(self):
         return f"{self.type} - {self.owner}"
 
     class Meta:
-        verbose_name = 'Документ машины'
-        verbose_name_plural = 'Документы машины'
+        verbose_name = 'Документ водителя'
+        verbose_name_plural = 'Документы водителя'
 
 
 class FuelCard(BaseModel):
     """ Модель: Топливная карта"""
 
     limit = models.PositiveIntegerField('Лимит')
-    number = models.CharField('Номер', unique=True, max_length=16)
+    number = models.CharField('Номер', primary_key=True, max_length=16)
 
     owner = models.OneToOneField(UserModel, verbose_name='Владелец', on_delete=models.SET(None),
                                  related_name='card', blank=True, null=True)
@@ -148,7 +150,7 @@ class FuelCard(BaseModel):
 class WhiteListEmail(models.Model):
     """  Модель: email разрешенный для регистрации """
 
-    email = models.EmailField('Email')
+    email = models.EmailField('Email', unique=True)
 
     def __str__(self):
         return self.email

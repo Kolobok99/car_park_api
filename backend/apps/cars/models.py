@@ -11,15 +11,15 @@ class Car(BaseModel):
     def return_path_to_upload_avatar(self, *args):
         """Возвращает путь загрузки аватарки"""
 
-        return return_file_directory('cars', 'avatar', self.registration_number)
+        return return_file_directory('cars', 'avatars', self.registration_number, self.image.name)
 
-    registration_number = models.CharField('Регистрационный номер', unique=True, max_length=6)
-    brand = models.ForeignKey('CarBrand', verbose_name='Марка', on_delete=models.SET(1),
-                              related_name='cars')
+    registration_number = models.CharField('Регистрационный номер', primary_key=True, max_length=6)
+    brand = models.ForeignKey('CarBrand', verbose_name='Марка', on_delete=models.SET(None),
+                              related_name='cars', null=True)
 
     region_code = models.PositiveSmallIntegerField('Код региона')
     owner = models.ForeignKey(UserModel, verbose_name='Владелец', on_delete=models.SET(None),
-                              related_name='my_cars', null=True, blank=True)
+                              related_name='cars', null=True, blank=True)
 
     last_inspection = models.DateField("Последний осмотр", null=True, blank=True)
 
@@ -36,7 +36,7 @@ class Car(BaseModel):
 class CarBrand(BaseModel):
     """ Модель: Марка автомобиля """
 
-    title = models.CharField(verbose_name='Марка', max_length=20, unique=True)
+    title = models.CharField(verbose_name='Марка', max_length=20, primary_key=True)
 
     def __str__(self):
         return self.title
@@ -52,21 +52,21 @@ class CarDocument(Document):
     def return_path_to_upload_doc(self, *args):
         """Возвращает путь загрузки документа"""
 
-        return return_file_directory('cars', 'doc', self.owner.registration_number)
+        return return_file_directory('cars', 'docs', self.car.registration_number, self.file.name)
 
-    owner = models.ForeignKey(Car, verbose_name="Владелец", on_delete=models.CASCADE,
-                              related_name='my_docs')
+    car = models.ForeignKey(Car, verbose_name="Машина", on_delete=models.CASCADE,
+                            related_name='docs')
     file = models.FileField('Копия', upload_to=return_path_to_upload_doc, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.type} - {self.owner}"
+        return f"{self.type} - {self.car}"
 
     class Meta:
         verbose_name = 'Документ машины'
         verbose_name_plural = 'Документы машины'
 
 
-class RepairRequest(models.Model):
+class RepairRequest(BaseModel):
     """ Модель: Заявка на ремонт  """
 
     STATUS_CHOISES = (
@@ -84,12 +84,12 @@ class RepairRequest(models.Model):
         ('S', 'Очень срочно'),
     )
 
-    type = models.ForeignKey("TypeOfApplication", verbose_name='Тип заявки', on_delete=models.SET(None))
+    type = models.ForeignKey("TypeOfApplication", verbose_name='Тип заявки', null=True, on_delete=models.SET(None))
     owner = models.ForeignKey(UserModel, verbose_name='Владелец', on_delete=models.SET(None),
-                              related_name='repair_reqs', null=True)
+                              related_name='reqs', null=True)
     engineer = models.ForeignKey(UserModel, verbose_name='Механик', on_delete=models.SET(None),
                                  related_name='repair_reqs', null=True)
-    car = models.ForeignKey(Car, verbose_name="Машина", on_delete=models.CASCADE, related_name='repair_reqs')
+    car = models.ForeignKey(Car, verbose_name="Машина", on_delete=models.CASCADE, related_name='reqs')
 
     time_to_execute = models.PositiveIntegerField('Время на выполнение',
                                                   default=0)
@@ -104,8 +104,8 @@ class RepairRequest(models.Model):
 
     def __str__(self):
         if self.owner:
-            return f"{self.pk}-{self.owner.last_name} + " \
-                   f"{self.start_date} + {self.type} + {self.car.registration_number}"
+            return f"{self.pk}-{self.owner.profile.last_name} + " \
+                   f"{self.created_on} + {self.type} + {self.car.registration_number}"
         return f"{self.pk}"
 
     class Meta:
@@ -116,7 +116,7 @@ class RepairRequest(models.Model):
 class TypeOfApplication(models.Model):
     """ Модель: Типы заявок  """
 
-    title = models.CharField('Наименование', max_length=50)
+    title = models.CharField('Наименование', max_length=50, primary_key=True)
 
     def __str__(self):
         return self.title

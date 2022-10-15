@@ -2,3 +2,5 @@
 venv_car_park/
 /backend/static
 /backend/freeze_req.txt
+/backend/media
+заметки.txt
