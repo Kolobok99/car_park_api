@@ -1,5 +1,6 @@
 from pprint import pprint
 
+from django.urls import path
 from rest_framework import routers
 
 from apps.api import views
@@ -15,5 +16,8 @@ router.register(r'repair', views.RepairRequestAPIViewSet, basename='repairs')
 router.register(r'cards', views.RepairRequestAPIViewSet, basename='cards')
 
 urlpatterns = router.urls
+# urlpatterns += [
+#     path('activation/', views.account_activation)
+# ]
 
 # pprint(router.urls)

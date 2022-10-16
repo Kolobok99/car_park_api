@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'apps.account',
     'apps.cars',
     'apps.api',
+    'apps.polls',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +122,30 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
+
+#REDIS:
+REDIS_HOST = os.environ.get('REDIS_HOST', default='0.0.0.0')
+REDIS_PORT = os.environ.get('REDIS_PORT', default='6379')
+
+#REDIS:
+# REDIS_HOST = 'redis'
+# REDIS_PORT = '6379'
+
+#CELERY
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ":" + REDIS_PORT + "/0"
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ":" + REDIS_PORT + '/0'
+CELERY_ACCEPT_CONTENT = {'application/json'}
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+#EMAIL
+EMAIL_HOST = os.environ.get('EMAIL_HOST', default='smtp.mail.ru')
+EMAIL_PORT = os.environ.get('EMAIL_PORT', default='2525')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', default='mail@mail.ru')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', default='host_pass')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', default='mail@gmail.com')

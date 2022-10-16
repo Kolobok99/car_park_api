@@ -1,5 +1,7 @@
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action, api_view, permission_classes
 
 from apps.account import models as account_models
 from apps.api import permissions
@@ -18,6 +20,8 @@ class CarAPIViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['retrieve', 'update', 'partial_update']:
             self.permission_classes = [permissions.IsManagerOrOwnerObject]
+        elif self.action == 'confiscate':
+            self.permission_classes = [AllowAny]
         else:
             self.permission_classes = [permissions.IsManager]
         return super().get_permissions()
@@ -31,12 +35,22 @@ class CarAPIViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
+    # @action(methods=['post'], detail=False)
+    # def confiscate(self, request, *args, **kwargs):
+    #     """
+    #     Удаляет владельца у переданного списка карт
+    #     """
+    #     print(request.data)
+    #     print(request.data.getlist('id'))
+    #     print(account_models.UserModel.objects.get())
+    #     return Response({"error": "формат!!!"})
+
 class CarBrandAPIViewSet(ModelViewSet):
     """APIViewSet: CarBrand"""
 
     queryset = cars_models.CarBrand.objects.all()
     serializer_class = serializers.CarBrandSerializer
-    permissions = [permissions.IsManager]
+    permission_classes = [permissions.IsManager, ]
 
 
 class UserAPIViewSet(ModelViewSet):
@@ -49,6 +63,8 @@ class UserAPIViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['retrieve', 'update', 'partial_update']:
             self.permission_classes = [permissions.IsManagerOrOwnerObject]
+        elif self.action == 'account_activation':
+            self.permission_classes = [AllowAny]
         else:
             self.permission_classes = [permissions.IsManager]
         return super().get_permissions()
@@ -60,13 +76,24 @@ class UserAPIViewSet(ModelViewSet):
             serializer = self.serializer_class(self.queryset, many=True)
         return Response(serializer.data)
 
+    @action(methods=['post'], detail=False)
+    def account_activation(self, request, *args, **kwargs):
+
+        user = self.queryset.filter(activation_code=request.POST.get('activation_code'))
+        if user:
+            user[0].is_active = True
+            user[0].save()
+            return Response({"success": "Аккаунт активирован"})
+        else:
+            return Response({"error": "Activation code is not valid"})
+
 
 class DocumentTypesAPIViewSet(ModelViewSet):
     """APIViewSet: UserDocument """
 
     queryset = base_models.DocType.objects.all()
     serializer_class = serializers.DocTypeSerializer
-    permissions = [permissions.IsManager]
+    permission_classes = [permissions.IsManager, ]
 
 
 class CarDocumentAPIViewSet(ModelViewSet):
@@ -143,7 +170,7 @@ class CardsAPIViewSet(ModelViewSet):
 
     queryset = account_models.FuelCard.objects.all()
     serializer_class = serializers.FuelCardSerializer
-    lookup_field = 'number'
+    # lookup_field = 'number'
 
     def get_permissions(self):
         if self.action == 'list':
@@ -158,3 +185,11 @@ class CardsAPIViewSet(ModelViewSet):
         else:
             serializer = self.serializer_class(self.queryset, many=True)
         return Response(serializer.data)
+
+
+class NotificationAPIViewSet(ModelViewSet):
+    """APIViewSet Notification"""
+
+    queryset = account_models.Notification.objects.all()
+    serializer_class = serializers.NotificationSerializer
+

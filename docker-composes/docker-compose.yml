@@ -30,14 +30,16 @@ services:
     environment:
       - DEBUG=1
       - SECRET_KEY=very_secret_key
-
       - POSTGRES_NAME=dev_db
       - POSTGRES_USER=manager
       - POSTGRES_PASSWORD=manager_password
       - POSTGRES_HOST=dev_db
       - POSTGRES_PORT=5432
-
+      - REDIS_HOST=dev_redis
+      - REDIS_PORT=6379
       - DATABASE=postgres
+    env_file:
+      - ../.env.files/.env.email
     depends_on:
       - dev_db
     restart: always
@@ -57,6 +59,33 @@ services:
       - POSTGRES_DB=dev_db
       - POSTGRES_USER=manager
       - POSTGRES_PASSWORD=manager_password
+
+  dev_redis:
+    container_name: cara_park_dev_redis_container
+    image: redis:alpine
+    expose:
+      - 6379
+  dev_celery:
+    container_name: car_park_dev_celery_container
+    restart: always
+    build: ../backend
+    command: celery --app conf.celery.app worker -B -l info
+    environment:
+      - REDIS_HOST=dev_redis
+      - REDIS_PORT=6379
+
+      - DB_HOST=dev_db
+      - DB_NAME=dev_db
+      - DB_USER=manager
+      - DB_PASS=manager_password
+    env_file:
+      - ../.env.files/.env.email
+    volumes:
+      - ../backend/:/app/
+    depends_on:
+      - dev_db
+      - dev_redis
+      - dev_web
 
 volumes:
   dev_postgres_data:

@@ -4,3 +4,4 @@ venv_car_park/
 /backend/freeze_req.txt
 /backend/media
 заметки.txt
+/.env.files/.env.email

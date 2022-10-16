@@ -1,5 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from apps.base.models import BaseModel, Document
@@ -55,7 +57,7 @@ class UserModel(BaseModel, AbstractBaseUser, PermissionsMixin):
     password = models.CharField("Пароль", max_length=128)
     role = models.CharField('Роль', max_length=1, choices=KINDS, default='d')
     is_active = models.BooleanField("Активирован?", default=False, editable=False)
-    activation_code = models.CharField("Код активации аккаунта", max_length=6, editable=False)
+    activation_code = models.CharField("Код активации аккаунта", max_length=6, editable=False, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
@@ -145,6 +147,33 @@ class FuelCard(BaseModel):
         verbose_name = 'Топливная карта'
         verbose_name_plural = 'Топливные карты'
 
+
+class Notification(BaseModel):
+    """
+        Модель: уведомления
+    """
+
+    recipient = models.ForeignKey(UserModel, verbose_name='получатель',
+                                  on_delete=models.SET(1),
+                                  related_name='nots')
+
+    active = models.BooleanField('Активность', default=True)
+
+    content = models.TextField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET(1))
+
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey(ct_field='content_type',
+                                       fk_field='object_id',)
+
+    owner_pk = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.content
+
+    class Meta:
+        verbose_name = 'Уведомление'
+        verbose_name_plural = 'Уведомления'
 
 
 class WhiteListEmail(models.Model):

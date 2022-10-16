@@ -47,43 +47,18 @@ class IsManager(BasePermission):
             return True
 
 
-class IsManagerOrOwnerObject(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        if request.user.is_manager() or obj.car.owner == request.user:
-            return True
-
-
 class IsOwnerObject(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated and obj.owner == request.user:
             return True
 
-    def has_permission(self, request, view):
-        return True
+    # def has_permission(self, request, view):
+    #     return True
 
 
-# class IsManagerOrOwner(BasePermission):
-#
-#     def has_object_permission(self, request, view, obj):
-#         if obj.owner == request.user or request.user.is_manager():
-#              return True
-#     def has_permission(self, request, view):
-#         return True
-#
-#
-#
-#
-# class IsManagerOrThisUser(BasePermission):
-#
-#     def has_object_permission(self, request, view, obj):
-#         if obj == request.user or request.user.is_manager():
-#             return True
-#
-#
-# class IsOwnerOnly(BasePermission):
-#
-#     def has_object_permission(self, request, view, obj):
-#         if obj.owner == request.user:
-#             return True
+class IsManagerOrOwnerObject(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_manager() or obj.car.owner == request.user:
+            return True
