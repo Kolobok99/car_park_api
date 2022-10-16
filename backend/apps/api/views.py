@@ -193,3 +193,9 @@ class NotificationAPIViewSet(ModelViewSet):
     queryset = account_models.Notification.objects.all()
     serializer_class = serializers.NotificationSerializer
 
+    def get_permissions(self):
+        if self.action == 'list':
+            self.permission_classes = [permissions.IsManager]
+        else:
+            self.permission_classes = [permissions.IsOwnerObject]
+        return super().get_permissions()

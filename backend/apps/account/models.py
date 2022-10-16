@@ -153,7 +153,7 @@ class Notification(BaseModel):
         Модель: уведомления
     """
 
-    recipient = models.ForeignKey(UserModel, verbose_name='получатель',
+    owner = models.ForeignKey(UserModel, verbose_name='получатель',
                                   on_delete=models.SET(1),
                                   related_name='nots')
 
@@ -166,7 +166,7 @@ class Notification(BaseModel):
     content_object = GenericForeignKey(ct_field='content_type',
                                        fk_field='object_id',)
 
-    owner_pk = models.PositiveIntegerField(default=0)
+    # owner_pk = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.content
