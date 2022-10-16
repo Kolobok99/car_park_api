@@ -4,7 +4,7 @@ from apps.cars import models as cars_models
 from apps.account import models as account_models
 
 
-def filtration_car(get_params):
+def filtration_cars(get_params):
     """
         Возвращает отфильтрованные по get_params (авто)
     """
@@ -51,7 +51,7 @@ def filtration_car(get_params):
     ).distinct()
 
 
-def filtration_user(get_params):
+def filtration_users(get_params):
     """
         Возвращает отфильтрованные по get_params (водители)
     """
