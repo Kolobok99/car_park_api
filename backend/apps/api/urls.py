@@ -2,6 +2,7 @@ from pprint import pprint
 
 from django.urls import path
 from rest_framework import routers
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from apps.api import views
 
@@ -16,8 +17,11 @@ router.register(r'repair', views.RepairRequestAPIViewSet, basename='repairs')
 router.register(r'cards', views.RepairRequestAPIViewSet, basename='cards')
 
 urlpatterns = router.urls
-# urlpatterns += [
-#     path('activation/', views.account_activation)
-# ]
+
+urlpatterns += [
+    path('api-token-auth/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api-token-auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api-token-auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+]
 
 # pprint(router.urls)

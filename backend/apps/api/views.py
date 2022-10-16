@@ -1,13 +1,18 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action
 
-from apps.account import models as account_models
-from apps.api import permissions
-from apps.api import serializers
-from apps.cars import models as cars_models
 from apps.base import models as base_models
+from apps.account import models as account_models
+from apps.cars import models as cars_models
+
+from apps.base import serializers as base_serializers
+from apps.account import serializers as account_serializers
+from apps.cars import serializers as cars_serializers
+
+from apps.api import permissions
+
 from services import filtration as custom_filters
 
 
@@ -15,11 +20,11 @@ class CarAPIViewSet(ModelViewSet):
     """APIViewSet: Машина"""
 
     queryset = cars_models.Car.objects.all()
-    serializer_class = serializers.CarSerializer
+    serializer_class = cars_serializers.CarSerializer
 
     def get_permissions(self):
         if self.action in ['retrieve', 'update', 'partial_update']:
-            self.permission_classes = [permissions.IsManagerOrOwnerObject]
+            self.permission_classes = [permissions.IsManagerOrCarOwnerObject]
         elif self.action == 'confiscate':
             self.permission_classes = [AllowAny]
         else:
@@ -49,7 +54,7 @@ class CarBrandAPIViewSet(ModelViewSet):
     """APIViewSet: CarBrand"""
 
     queryset = cars_models.CarBrand.objects.all()
-    serializer_class = serializers.CarBrandSerializer
+    serializer_class = cars_serializers.CarBrandSerializer
     permission_classes = [permissions.IsManager, ]
 
 
@@ -57,7 +62,7 @@ class UserAPIViewSet(ModelViewSet):
     """APIViewSet: User """
 
     queryset = account_models.UserModel.objects.all()
-    serializer_class = serializers.UserSerializer
+    serializer_class = account_serializers.UserSerializer
     lookup_value_regex = '([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
 
     def get_permissions(self):
@@ -92,7 +97,7 @@ class DocumentTypesAPIViewSet(ModelViewSet):
     """APIViewSet: UserDocument """
 
     queryset = base_models.DocType.objects.all()
-    serializer_class = serializers.DocTypeSerializer
+    serializer_class = base_serializers.DocTypeSerializer
     permission_classes = [permissions.IsManager, ]
 
 
@@ -100,7 +105,7 @@ class CarDocumentAPIViewSet(ModelViewSet):
     """APIViewSet: CarDocument """
 
     queryset = cars_models.CarDocument.objects.all()
-    serializer_class = serializers.CarDocumentSerializer
+    serializer_class = cars_serializers.CarDocumentSerializer
 
     def get_permissions(self):
         if self.action == 'list':
@@ -124,7 +129,7 @@ class UserDocumentAPIViewSet(ModelViewSet):
     """APIViewSet: UserDocument """
 
     queryset = account_models.UserDocument.objects.all()
-    serializer_class = serializers.UserDocumentSerializer
+    serializer_class = account_serializers.UserDocumentSerializer
 
     def get_permissions(self):
         if self.action == 'list':
@@ -148,7 +153,7 @@ class RepairRequestAPIViewSet(ModelViewSet):
     """ APIViewSet: RepairRequest """
 
     queryset = cars_models.RepairRequest.objects.all()
-    serializer_class = serializers.RepairRequestSerializer
+    serializer_class = cars_serializers.RepairRequestSerializer
 
     def get_permissions(self):
         if self.action == 'list':
@@ -169,7 +174,7 @@ class CardsAPIViewSet(ModelViewSet):
     """APIViewSet: FuelCard """
 
     queryset = account_models.FuelCard.objects.all()
-    serializer_class = serializers.FuelCardSerializer
+    serializer_class = account_serializers.FuelCardSerializer
     # lookup_field = 'number'
 
     def get_permissions(self):
@@ -191,7 +196,7 @@ class NotificationAPIViewSet(ModelViewSet):
     """APIViewSet Notification"""
 
     queryset = account_models.Notification.objects.all()
-    serializer_class = serializers.NotificationSerializer
+    serializer_class = account_serializers.NotificationSerializer
 
     def get_permissions(self):
         if self.action == 'list':
