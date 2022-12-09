@@ -5,3 +5,4 @@ venv_car_park/
 /backend/media
 заметки.txt
 /.env.files/.env.email
+./backend/.pytest_cache/

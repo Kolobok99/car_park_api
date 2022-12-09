@@ -13,7 +13,7 @@ class Car(BaseModel):
 
         return return_file_directory('cars', 'avatars', self.registration_number, self.image.name)
 
-    registration_number = models.CharField('Регистрационный номер', primary_key=True, max_length=6)
+    registration_number = models.CharField('Регистрационный номер', unique=True, max_length=6)
     brand = models.ForeignKey('CarBrand', verbose_name='Марка', on_delete=models.SET(None),
                               related_name='cars', null=True)
 
@@ -36,7 +36,7 @@ class Car(BaseModel):
 class CarBrand(BaseModel):
     """ Модель: Марка автомобиля """
 
-    title = models.CharField(verbose_name='Марка', max_length=20, primary_key=True)
+    title = models.CharField(verbose_name='Марка', max_length=20, unique=True)
 
     def __str__(self):
         return self.title
@@ -78,29 +78,21 @@ class RepairRequest(BaseModel):
         ('T', 'Отклонено')
     )
 
-    URGENCY_CHOISES = (
-        ('N', 'Не срочно'),
-        ('U', 'Срочно'),
-        ('S', 'Очень срочно'),
-    )
 
-    type = models.ForeignKey("TypeOfApplication", verbose_name='Тип заявки', null=True, on_delete=models.SET(None))
+    type = models.ForeignKey("RepairType", verbose_name='Тип заявки', null=True, on_delete=models.SET(None))
     owner = models.ForeignKey(UserModel, verbose_name='Владелец', on_delete=models.SET(None),
                               related_name='reqs', null=True)
     engineer = models.ForeignKey(UserModel, verbose_name='Механик', on_delete=models.SET(None),
-                                 related_name='repair_reqs', null=True)
+                                 related_name='repair_reqs', null=True, blank=True)
     car = models.ForeignKey(Car, verbose_name="Машина", on_delete=models.CASCADE, related_name='reqs')
 
-    time_to_execute = models.PositiveIntegerField('Время на выполнение',
-                                                  default=0)
+    time_to_execute = models.PositiveIntegerField('Время на выполнение')
     end_date = models.DateField('Дата окончания', null=True, blank=True)
 
     is_active = models.BooleanField("Активность заявки", default=True)
     status = models.CharField('Статус', max_length=3, choices=STATUS_CHOISES, default='O')
-    urgency = models.CharField('Cрочность', max_length=1, choices=URGENCY_CHOISES, default='N')
 
     description = models.TextField("Описание")
-    manager_comment = models.TextField("Комментарий менеджера", null=True, blank=True)
 
     def __str__(self):
         if self.owner:
@@ -113,10 +105,10 @@ class RepairRequest(BaseModel):
         verbose_name_plural = 'Заявки'
 
 
-class TypeOfApplication(models.Model):
+class RepairType(models.Model):
     """ Модель: Типы заявок  """
 
-    title = models.CharField('Наименование', max_length=50, primary_key=True)
+    title = models.CharField('Наименование', max_length=50, unique=True)
 
     def __str__(self):
         return self.title

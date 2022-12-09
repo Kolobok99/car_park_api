@@ -18,6 +18,18 @@ from apps.polls import tasks
 
 class DocTypeSerializer(serializers.ModelSerializer):
 
+    car_or_user_display = serializers.ChoiceField(choices=[('c', 'Машина'), ('m', 'Водитель')], source='get_car_or_user_display', read_only=True)
+
     class Meta:
         model = base_models.DocType
-        fields = "__all__"
+        fields = [
+            'id',
+            'created_on',
+            'modified_on',
+            'title',
+            'car_or_user',
+            'car_or_user_display'
+        ]
+        extra_kwargs = {
+            'car_or_user': {'write_only': True}
+        }

@@ -9,11 +9,14 @@ class BaseModel(models.Model):
     created_on = models.DateTimeField('Время создания ', auto_now_add=True)
     modified_on = models.DateTimeField('Время добавления', auto_now=True)
 
+    def get_model_fields(self):
+        return self._meta.fields
+
     class Meta:
         abstract = True
 
 
-class DocType(models.Model):
+class DocType(BaseModel):
     """ Модель: Тип документа """
 
     KINDS = (
@@ -21,7 +24,7 @@ class DocType(models.Model):
         ('c', 'Машина'),
     )
 
-    title = models.CharField('Наименования', max_length=255, primary_key=True)
+    title = models.CharField('Наименования', max_length=255, unique=True)
     car_or_user = models.CharField("Тип", max_length=1, choices=KINDS, default='c')
 
     def __str__(self):

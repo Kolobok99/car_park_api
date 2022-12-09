@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 
-class DateValidator:
+class DocumentDateValidator:
 
     def __init__(self, base):
         self.__call__(base)

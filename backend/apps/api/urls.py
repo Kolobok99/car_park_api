@@ -9,12 +9,15 @@ from apps.api import views
 router = routers.DefaultRouter()
 router.register(r'car', views.CarAPIViewSet, basename='car')
 router.register(r'brand', views.CarBrandAPIViewSet, basename='brand')
+router.register(r'doc_type', views.DocumentTypesAPIViewSet, basename='doc_type')
 router.register(r'user', views.UserAPIViewSet, basename='user')
 router.register(r'car_doc', views.CarDocumentAPIViewSet, basename='car_doc')
 router.register(r'user_doc', views.UserDocumentAPIViewSet, basename='user_doc')
-router.register(r'doc_type', views.DocumentTypesAPIViewSet, basename='docs_type')
-router.register(r'repair', views.RepairRequestAPIViewSet, basename='repairs')
-router.register(r'cards', views.RepairRequestAPIViewSet, basename='cards')
+router.register(r'repair_type', views.RepairTypeAPIViewSet, basename='repair_type')
+router.register(r'repair', views.RepairRequestAPIViewSet, basename='repair')
+router.register(r'card', views.CardAPIViewSet, basename='card')
+router.register(r'note', views.NotificationAPIViewSet, basename='note')
+
 
 urlpatterns = router.urls
 

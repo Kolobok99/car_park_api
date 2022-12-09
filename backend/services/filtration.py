@@ -183,3 +183,18 @@ def filtration_documents(model, get_params):
     return model.objects.filter(
         *list_of_Q
     ).distinct()
+
+
+from django_filters import rest_framework as filters
+
+class CardFilter(filters.FilterSet):
+
+    number = filters.CharFilter(field_name='number', lookup_expr='contains')
+    min_balance = filters.NumberFilter(field_name="balance", lookup_expr='gte')
+    max_balance = filters.NumberFilter(field_name="balance", lookup_expr='lte')
+    min_limit = filters.NumberFilter(field_name="limit", lookup_expr='gte')
+    max_limit = filters.NumberFilter(field_name="limit", lookup_expr='lte')
+
+    class Meta:
+        fields = ('number',)
+        model = account_models.FuelCard

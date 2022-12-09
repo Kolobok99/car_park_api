@@ -20,7 +20,8 @@ class Command(BaseCommand):
         try:
             UserModel.objects.create_user(
                 email='driver@mail.com',
-                password='12345'
+                password='12345',
+                is_active=True
             )
         except:
             pass
